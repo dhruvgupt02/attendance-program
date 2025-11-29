@@ -192,3 +192,26 @@ void checkDefaulters(AttendanceRecord *records, int count) {
         }
     }
 }
+
+// --- 5. Analytics (Lecture-wise) ---
+void generateAnalytics(AttendanceRecord *records, int count) {
+    printf("\n--- Lecture-wise Trends ---\n");
+    
+    // In a full system, we would group by unique dates.
+    // Here we iterate and print raw data formatted as a report.
+    
+    int total_presents_overall = 0;
+    
+    for(int i=0; i<count; i++) {
+        if(records[i].status == 1) total_presents_overall++;
+    }
+    
+    printf("Total Lectures Recorded: %d\n", count); // Assumes 1 record = 1 student presence in a class
+    printf("Total Presences Recorded: %d\n", total_presents_overall);
+    printf("Average Attendance Density: %.2f%%\n", ((float)total_presents_overall/count)*100);
+}
+
+void clearInputBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
