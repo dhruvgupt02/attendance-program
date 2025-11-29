@@ -156,3 +156,39 @@ void viewStudentStats(AttendanceRecord *records, int count) {
         printf("Stats for %s: Attended %d/%d (%.2f%%)\n", targetID, present, total, percentage);
     }
 }
+
+// --- 4. Defaulter Logic ---
+void checkDefaulters(AttendanceRecord *records, int count) {
+    // Note: In a real scenario, we would need a list of ALL unique students.
+    // For this demo, we ask which student to check against the threshold.
+    
+    float threshold;
+    printf("Enter Attendance Threshold (e.g., 75.0): ");
+    scanf("%f", &threshold);
+    
+    // Simple approach: We will scan the loaded records, find unique IDs 
+    // (omitted for brevity, doing a single pass check approach here)
+    printf("\n--- Checking Loaded Records ---\n");
+    printf("Note: In this basic version, enter ID to verify eligibility.\n");
+    
+    char targetID[MAX_ID];
+    printf("Enter ID to check eligibility: ");
+    scanf("%s", targetID);
+    
+    int total = 0, present = 0;
+    for(int i=0; i<count; i++) {
+         if (strcmp(records[i].studentID, targetID) == 0) {
+            total++;
+            if (records[i].status == 1) present++;
+        }
+    }
+    
+    if (total > 0) {
+        float pct = ((float)present / total) * 100;
+        if (pct < threshold) {
+            printf("[ALERT] %s is a DEFAULTER. Attendance: %.2f%%\n", targetID, pct);
+        } else {
+            printf("[OK] %s is safe. Attendance: %.2f%%\n", targetID, pct);
+        }
+    }
+}
