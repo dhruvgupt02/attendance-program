@@ -1,8 +1,135 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define FILENAME "attendance_db.txt"
+#define MAX_ID 20
+#define MAX_DATE 15
+
+// --- Data Structure ---
+typedef struct {
+    char studentID[MAX_ID];
+    char date[MAX_DATE];
+    int status; // 1 = Present, 0 = Absent
+} AttendanceRecord;
+
+// --- Function Prototypes ---
+void markAttendance();
+AttendanceRecord* loadRecords(int *count);
+void viewStudentStats(AttendanceRecord *records, int count);
+void checkDefaulters(AttendanceRecord *records, int count);
+void generateAnalytics(AttendanceRecord *records, int count);
+void clearInputBuffer();
 
 int main() {
-    printf("Hello, World!\n");
-    printf("i am dhruv");
-    printf(" gupta");
+    int choice, recordCount = 0;
+    AttendanceRecord *data = NULL;
+
+    while(1) {
+        printf("\n--- Attendance Analytics System ---\n");
+        printf("1. Mark Attendance (Save to File)\n");
+        printf("2. View Student Percentage\n");
+        printf("3. Identify Defaulters (<75%%)\n");
+        printf("4. Class Analytics (Lecture-wise)\n");
+        printf("5. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+        clearInputBuffer();
+
+        switch(choice) {
+            case 1:
+                markAttendance();
+                break;
+            case 2:
+                // Load data dynamically for analysis
+                if(data != NULL) free(data); // Free previous load
+                data = loadRecords(&recordCount);
+                if(data) viewStudentStats(data, recordCount);
+                break;
+            case 3:
+                if(data != NULL) free(data);
+                data = loadRecords(&recordCount);
+                if(data) checkDefaulters(data, recordCount);
+                break;
+            case 4:
+                if(data != NULL) free(data);
+                data = loadRecords(&recordCount);
+                if(data) generateAnalytics(data, recordCount);
+                break;
+            case 5:
+                if(data != NULL) free(data);
+                printf("Exiting system...\n");
+                exit(0);
+            default:
+                printf("Invalid choice.\n");
+        }
+    }
     return 0;
+}
+
+// --- 1. File I/O & Data Entry ---
+void markAttendance() {
+    FILE *fp = fopen(FILENAME, "a"); // Append mode
+    if (!fp) {
+        perror("Error opening file");
+        return;
+    }
+
+    AttendanceRecord rec;
+    printf("Enter Date (YYYY-MM-DD): ");
+    scanf("%s", rec.date);
+    
+    printf("Enter Student ID: ");
+    scanf("%s", rec.studentID);
+    
+    printf("Is student present? (1 for Yes, 0 for No): ");
+    scanf("%d", &rec.status);
+
+    // Write to file: ID Date Status
+    fprintf(fp, "%s %s %d\n", rec.studentID, rec.date, rec.status);
+    fclose(fp);
+    printf("Attendance saved successfully.\n");
+}
+
+// --- 2. Dynamic Memory & Loading ---
+AttendanceRecord* loadRecords(int *count) {
+    FILE *fp = fopen(FILENAME, "r");
+    if (!fp) {
+        printf("No database found. Mark attendance first.\n");
+        *count = 0;
+        return NULL;
+    }
+
+    // Step 1: Count lines to determine memory needed
+    int lines = 0;
+    char ch;
+    while(!feof(fp)) {
+        ch = fgetc(fp);
+        if(ch == '\n') lines++;
+    }
+    rewind(fp); // Go back to start of file
+
+    // Step 2: Dynamic Allocation
+    /* Using malloc to allocate exactly the memory needed 
+       based on file size (Syllabus application)
+    */
+    AttendanceRecord *records = (AttendanceRecord*) malloc(lines * sizeof(AttendanceRecord));
+    if (!records) {
+        printf("Memory allocation failed!\n");
+        fclose(fp);
+        return NULL;
+    }
+
+    // Step 3: Load data into array
+    int i = 0;
+    while(fscanf(fp, "%s %s %d", records[i].studentID, records[i].date, &records[i].status) != EOF) {
+        i++;
+    }
+    
+    *count = i; // Update the count variable in main via pointer
+    fclose(fp);
+    
+    
+    
+    return records;
 }
