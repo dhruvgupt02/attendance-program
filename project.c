@@ -133,3 +133,26 @@ AttendanceRecord* loadRecords(int *count) {
     
     return records;
 }
+// --- 3. Student Logic ---
+void viewStudentStats(AttendanceRecord *records, int count) {
+    char targetID[MAX_ID];
+    printf("Enter Student ID to search: ");
+    scanf("%s", targetID);
+
+    int total = 0, present = 0;
+    
+    // Pointer traversal
+    for (int i = 0; i < count; i++) {
+        if (strcmp((records + i)->studentID, targetID) == 0) {
+            total++;
+            if ((records + i)->status == 1) present++;
+        }
+    }
+
+    if (total == 0) {
+        printf("No records found for %s.\n", targetID);
+    } else {
+        float percentage = ((float)present / total) * 100;
+        printf("Stats for %s: Attended %d/%d (%.2f%%)\n", targetID, present, total, percentage);
+    }
+}
